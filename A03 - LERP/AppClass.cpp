@@ -39,6 +39,22 @@ void Application::InitVariables(void)
 		fSize += 0.5f; //increment the size for the next orbit
 		uColor -= static_cast<uint>(decrements); //decrease the wavelength
 	}
+	float pi = 3.141592654f;
+	fSize = 1.0f; //reset radius
+
+	//loop through toruses
+	for (uint i = 0; i < m_uOrbits; i++) {
+		std::vector<vector3> tempVecList; //makes temporarily list of stops for current torus
+
+		//loop through the number of stops we'll need;
+		for (uint b = 0; b < i + 3; b++) {
+			float x = glm::cos(pi * (2.0f / (i + 3)) * b) * fSize; //x position of stop b
+			float y = glm::sin(pi * (2.0f / (i + 3)) * b) * fSize; //y position of stop b
+			tempVecList.push_back(vector3(x, y, 0)); //push new stop to templist
+		}
+		m_stopList.push_back(tempVecList); //push temp list (list of stops for torus i) to master list
+		fSize += 0.5f; //increase radius for next time around
+	}
 }
 void Application::Update(void)
 {
@@ -53,6 +69,11 @@ void Application::Update(void)
 }
 void Application::Display(void)
 {
+	//Get a timer
+	static float fTimer = 0;	//store the new timer
+	static uint uClock = m_pSystem->GenClock(); //generate a new clock for that timer
+	fTimer += m_pSystem->GetDeltaTime(uClock); //get the delta time for that timer
+
 	// Clear the screen
 	ClearScreen();
 
@@ -64,14 +85,29 @@ void Application::Display(void)
 	*/
 	//m4Offset = glm::rotate(IDENTITY_M4, 90.0f, AXIS_Z);
 
+	//set up traversal of stops
+	static float lastTime = 0; //the clock time that we hit the previous node
+	static int currentNode = 0; //the current node we're heading towards
+
+	float fPercent = fTimer - lastTime; //find the current percent of the way our ball should be towards the next node
+
+	//check to see if percentage needs a reset
+	if (fPercent > 1) {
+		currentNode++; //increment to next node in list
+		fPercent = 0; //reset percent
+		lastTime = fTimer; //set the time we hit this node
+	}
+
 	// draw a shapes
 	for (uint i = 0; i < m_uOrbits; ++i)
 	{
 		m_pMeshMngr->AddMeshToRenderList(m_shapeList[i], glm::rotate(m4Offset, 90.0f, AXIS_X));
 
 		//calculate the current position
-		vector3 v3CurrentPos = ZERO_V3;
-		matrix4 m4Model = glm::translate(m4Offset, v3CurrentPos);
+		vector3 oldNode = m_stopList[i][currentNode % (i+3)]; //start node
+		vector3 newNode = m_stopList[i][(currentNode + 1) % (i+3)]; //end node
+		vector3 v3CurrentPos = glm::lerp(oldNode, newNode, fPercent); //current position given start, end, and percentage way to travel
+		matrix4 m4Model = glm::translate(m4Offset, v3CurrentPos); //get mat4 from offset and currentPos
 
 		//draw spheres
 		m_pMeshMngr->AddSphereToRenderList(m4Model * glm::scale(vector3(0.1)), C_WHITE);
