@@ -347,29 +347,49 @@ void Application::CameraRotation(float a_fSpeed)
 	float fAngleX = 0.0f;
 	float fAngleY = 0.0f;
 	float fDeltaMouse = 0.0f;
+
+
+	//set players yaw and pitch
 	if (MouseX < CenterX)
 	{
 		fDeltaMouse = static_cast<float>(CenterX - MouseX);
-		fAngleY += fDeltaMouse * a_fSpeed;
+		myRotation.y -= (fDeltaMouse * a_fSpeed) / 25.0f;
 	}
 	else if (MouseX > CenterX)
 	{
 		fDeltaMouse = static_cast<float>(MouseX - CenterX);
-		fAngleY -= fDeltaMouse * a_fSpeed;
+		myRotation.y += (fDeltaMouse * a_fSpeed) / 25.0f;
 	}
 
 	if (MouseY < CenterY)
 	{
 		fDeltaMouse = static_cast<float>(CenterY - MouseY);
-		fAngleX -= fDeltaMouse * a_fSpeed;
+		myRotation.x += (fDeltaMouse * a_fSpeed) / 25.0f;
 	}
 	else if (MouseY > CenterY)
 	{
 		fDeltaMouse = static_cast<float>(MouseY - CenterY);
-		fAngleX += fDeltaMouse * a_fSpeed;
+		myRotation.x -= (fDeltaMouse * a_fSpeed) / 25.0f;
 	}
+
 	//Change the Yaw and the Pitch of the camera
 	SetCursorPos(CenterX, CenterY);//Position the mouse in the center
+
+	//limit pitch to between -half pi and +half pi
+	if (myRotation.x >= PI / 2.0f) {
+		myRotation.x = PI / 2.0f - .01f;
+	}
+	else if(myRotation.x <= -PI / 2.0f) {
+		myRotation.x = -PI / 2.0f + .01f;
+	}
+
+	//find point on unit sphere with yaw and pitch
+	float x = glm::cos(myRotation.y) * glm::cos(myRotation.x);
+	float y = glm::sin(myRotation.x);
+	float z = glm::sin(myRotation.y) * glm::cos(myRotation.x);
+
+	//set that to the target location
+	myTarget = vector3(x, y, z);
 }
 //Keyboard
 void Application::ProcessKeyboard(void)
@@ -379,12 +399,56 @@ void Application::ProcessKeyboard(void)
 	for discreet on/off use ProcessKeyboardPressed/Released
 	*/
 #pragma region Camera Position
+
 	float fSpeed = 0.1f;
 	float fMultiplier = sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) ||
 		sf::Keyboard::isKeyPressed(sf::Keyboard::RShift);
 
 	if (fMultiplier)
 		fSpeed *= 5.0f;
+
+	//set up to always be above player so camera's roll is never tilted
+	m_pCamera->SetUp(vector3(0,1,0));
+
+	//set rotation based on target location and player position
+	m_pCamera->SetTarget(vector3(
+		myTarget.x + myPosition.x,
+		myTarget.y + myPosition.y,
+		myTarget.z + myPosition.z));
+
+	//set player position
+	m_pCamera->SetPosition(myPosition);
+
+	//if player strafes we will only move on the xz plane
+	//because of this we won't want to use the normalized unit sphere (xyz)
+	//from target, we'll only want a normalized vector of xz so we find that here
+	float mag = glm::sqrt(glm::pow2(myTarget.x) + glm::pow2(myTarget.z));
+	float normX = myTarget.x / mag;
+	float normZ = myTarget.z / mag;
+
+	//move based on unit sphere and target/look direction
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
+		myPosition.x += myTarget.x * fSpeed;
+		myPosition.y += myTarget.y * fSpeed;
+		myPosition.z += myTarget.z * fSpeed;
+	}
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
+		myPosition.x -= myTarget.x * fSpeed;
+		myPosition.y -= myTarget.y * fSpeed;
+		myPosition.z -= myTarget.z * fSpeed;
+	}
+
+	//strafe based on our normalized xz target location
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+		myPosition.x += normZ * fSpeed;
+		myPosition.z -= normX * fSpeed;
+	}
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+		myPosition.x -= normZ * fSpeed;
+		myPosition.z += normX * fSpeed;
+	}
+	
+
 #pragma endregion
 }
 //Joystick

@@ -19,6 +19,10 @@ class Application
 	MyCamera* m_pCamera = nullptr; //Camera class
 	MyMeshManager* m_pMyMeshMngr = nullptr; //My Mesh Manager
 	String m_sProgrammer = "Alberto Bobadilla - labigm@rit.edu"; //Programmer
+
+	vector3 myPosition = glm::vec3(0, 2, 0);
+	vector3 myRotation = glm::vec3(0, 0, 0);
+	vector3 myTarget = glm::vec3(1, 0, 0);
 private:
 	static ImGuiObject gui; //GUI object
 
@@ -118,6 +122,7 @@ private:
 	OUTPUT: ---
 	*/
 	void Release(void);
+
 #pragma endregion
 
 #pragma region Main Loop

@@ -25,21 +25,29 @@ void Application::Display(void)
 	matrix4 m4View = m_pCameraMngr->GetViewMatrix();
 	matrix4 m4Projection = m_pCameraMngr->GetProjectionMatrix();
 
-	static glm::quat oldOrientation = glm::quat(0.0f,0.0f,0.0f,0.0f);
+	static glm::quat oldOrientation;
 	
-	m_m4Model = glm::rotate(IDENTITY_M4, m_v3Rotation.x, vector3(1.0f, 0.0f, 0.0f));
+	/*m_m4Model = glm::rotate(IDENTITY_M4, m_v3Rotation.x, vector3(1.0f, 0.0f, 0.0f));
 	m_m4Model = glm::rotate(m_m4Model, m_v3Rotation.y, vector3(0.0f, 1.0f, 0.0f));
-	m_m4Model = glm::rotate(m_m4Model, m_v3Rotation.z, vector3(0.0f, 0.0f, 1.0f));
+	m_m4Model = glm::rotate(m_m4Model, m_v3Rotation.z, vector3(0.0f, 0.0f, 1.0f));*/
+	//glm::quat rotX = glm::angleAxis(m_v3Rotation.x, vector3(1.0f, 0, 0));
+	//glm::quat rotY = glm::angleAxis(m_v3Rotation.y, vector3(0, 1.0f, 0));
+	//glm::quat rotZ = glm::angleAxis(m_v3Rotation.z, vector3(0, 0, 1.0f));
+	//glm::quat endRot = (rotX * rotY * rotZ);
+
+	//glm::quat newQuat = glm::mix(oldOrientation, endRot, .5f);
+	//oldOrientation = newQuat;
 
 	//m_qOrientation = m_qOrientation * glm::angleAxis(1.0f, vector3(1.0f));
 	
-	glm::quat myRotation = glm::mix(oldOrientation, glm::quat_cast(m_m4Model),0.5f);
+	//glm::quat myRotation = glm::mix(oldOrientation, glm::quat_cast(m_m4Model),0.5f);
+	//glm::mat4 myRotation = m_m4Model * ToMatrix4(oldOrientation);
 	//glm::quat myQuat = glm::quat_cast(glm::mat4(m_v3Rotation));
 	
 
 	//glm::quat rotQuat1 = glm::quat(glm::mediump_ivec3(1.0f, 0.0f, 0.0f), m_v3Rotation.x);
 
-	m_pMesh->Render(m4Projection, m4View, ToMatrix4(myRotation));
+	m_pMesh->Render(m4Projection, m4View, ToMatrix4(m_qOrientation));
 	
 	// draw a skybox
 	m_pMeshMngr->AddSkyboxToRenderList();

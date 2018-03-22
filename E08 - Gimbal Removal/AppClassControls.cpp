@@ -416,24 +416,27 @@ void Application::ProcessKeyboard(void)
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::X))
 	{
-		if (fMultiplier)
+		/*if (fMultiplier)
 			m_v3Rotation.x -= 1.0f;
 		else
-			m_v3Rotation.x += 1.0f;
+			m_v3Rotation.x += 1.0f;*/
+		m_qOrientation = m_qOrientation * glm::angleAxis(1.0f, vector3(1, 0, 0));
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Y))
 	{
-		if (fMultiplier)
+	/*	if (fMultiplier)
 			m_v3Rotation.y -= 1.0f;
 		else
-			m_v3Rotation.y += 1.0f;
-	}
+			m_v3Rotation.y += 1.0f;*/
+		m_qOrientation = m_qOrientation * glm::angleAxis(1.0f, vector3(0, 1, 0));
+	}	
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z))
 	{
-		if (fMultiplier)
+	/*	if (fMultiplier)
 			m_v3Rotation.z -= 1.0f;
 		else
-			m_v3Rotation.z += 1.0f;
+			m_v3Rotation.z += 1.0f;*/
+		m_qOrientation = m_qOrientation * glm::angleAxis(1.0f, vector3(0, 0, 1));
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::R))
 	{
