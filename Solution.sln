@@ -100,6 +100,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "E06 - LERP", "E06 - LERP\E0
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "E08 - Gimbal Removal", "E08 - Gimbal Removal\E08 - Gimbal Removal.vcxproj", "{78390F91-1D07-466E-A8E9-A8886761D5AE}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Ex01F", "Ex01F\Ex01F.vcxproj", "{4DEDF8A2-4629-43D0-82B7-FA4A3A952AFB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -274,6 +276,10 @@ Global
 		{78390F91-1D07-466E-A8E9-A8886761D5AE}.Debug|x86.Build.0 = Debug|Win32
 		{78390F91-1D07-466E-A8E9-A8886761D5AE}.Release|x86.ActiveCfg = Release|Win32
 		{78390F91-1D07-466E-A8E9-A8886761D5AE}.Release|x86.Build.0 = Release|Win32
+		{4DEDF8A2-4629-43D0-82B7-FA4A3A952AFB}.Debug|x86.ActiveCfg = Debug|Win32
+		{4DEDF8A2-4629-43D0-82B7-FA4A3A952AFB}.Debug|x86.Build.0 = Debug|Win32
+		{4DEDF8A2-4629-43D0-82B7-FA4A3A952AFB}.Release|x86.ActiveCfg = Release|Win32
+		{4DEDF8A2-4629-43D0-82B7-FA4A3A952AFB}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
