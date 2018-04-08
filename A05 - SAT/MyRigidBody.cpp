@@ -276,16 +276,92 @@ void MyRigidBody::AddToRenderList(void)
 
 uint MyRigidBody::SAT(MyRigidBody* const a_pOther)
 {
-	/*
-	Your code goes here instead of this comment;
+	//declare radius a and radius b
+	float ra, rb;
 
-	For this method, if there is an axis that separates the two objects
-	then the return will be different than 0; 1 for any separating axis
-	is ok if you are not going for the extra credit, if you could not
-	find a separating axis you need to return 0, there is an enum in
-	Simplex that might help you [eSATResults] feel free to use it.
-	(eSATResults::SAT_NONE has a value of 0)
-	*/
+	//mat3x3s to store the tansform vectors of b in a's coordinate space
+	glm::mat3x3 R, AbsR;
+
+	//converts model matrix from a matrix 4 to a matrix3x3
+	glm::mat3x3 a_u;
+	glm::mat3x3 b_u;
+	for (uint i = 0; i < 3; i++) {
+		for (uint j = 0; j < 3; j++) {
+			a_u[i][j] = this->GetModelMatrix()[i][j];
+			b_u[i][j] = a_pOther->GetModelMatrix()[i][j];
+		}
+	}
+	//converts b's model matrix to a's coordinate space
+	//sets another matrix3x3 to the absolute value of calculated values
+	for (uint i = 0; i < 3; i++) {
+		for (uint j = 0; j < 3; j++) {
+			R[i][j] = glm::dot(a_u[i], b_u[j]);
+			AbsR[i][j] = glm::abs(R[i][j]) + .001f;
+		}
+	}
+	//get translation vector from a to b
+	glm::vec3 t = a_pOther->GetCenterGlobal() - this->GetCenterGlobal();
+
+	//sets translation vector to a's coordinate space
+	t = glm::vec3(glm::dot(t, glm::vec3(a_u[0])),
+		glm::dot(t, glm::vec3(a_u[1])),
+		glm::dot(t, glm::vec3(a_u[2]))
+	);
+	// Test axes L = A0, L = A1, L = A2
+	for (uint i = 0; i < 3; i++) {
+		ra = this->GetHalfWidth()[i];
+		rb = a_pOther->GetHalfWidth()[0] * AbsR[i][0] +
+			a_pOther->GetHalfWidth()[1] * AbsR[i][1] +
+			a_pOther->GetHalfWidth()[2] * AbsR[i][2];
+		if (glm::abs(t[i]) > ra + rb) return 1;
+	}
+	// Test axes L = B0, L = B1, L = B2
+	for (uint i = 0; i < 3; i++) {
+		ra = this->GetHalfWidth()[0] * AbsR[0][i] +
+			this->GetHalfWidth()[1] * AbsR[1][i] +
+			this->GetHalfWidth()[2] * AbsR[2][i];
+		rb = a_pOther->GetHalfWidth()[i];
+		if (glm::abs(t[0] * R[0][i] + 
+			t[1] * R[1][i] + 
+			t[2] * R[2][i]) > ra + rb) return 1;
+	}
+
+	// Test axis L = A0 x B0
+	ra = this->GetHalfWidth()[1] * AbsR[2][0] + this->GetHalfWidth()[2] * AbsR[1][0];
+	rb = a_pOther->GetHalfWidth()[1] * AbsR[0][2] + a_pOther->GetHalfWidth()[2] * AbsR[0][1];
+	if (glm::abs(t[2] * R[1][0] - t[1] * R[2][0]) > ra + rb) return 1;
+	// Test axis L = A0 x B1
+	ra = this->GetHalfWidth()[1] * AbsR[2][1] + this->GetHalfWidth()[2] * AbsR[1][1];
+	rb = a_pOther->GetHalfWidth()[0] * AbsR[0][2] + a_pOther->GetHalfWidth()[2] * AbsR[0][0];
+	if (glm::abs(t[2] * R[1][1] - t[1] * R[2][1]) > ra + rb) return 1;
+	// Test axis L = A0 x B2
+	ra = this->GetHalfWidth()[1] * AbsR[2][2] + this->GetHalfWidth()[2] * AbsR[1][2];
+	rb = a_pOther->GetHalfWidth()[0] * AbsR[0][1] + a_pOther->GetHalfWidth()[1] * AbsR[0][0];
+	if (glm::abs(t[2] * R[1][2] - t[1] * R[2][2]) > ra + rb) return 1;
+	// Test axis L = A1 x B0
+	ra = this->GetHalfWidth()[0] * AbsR[2][0] + this->GetHalfWidth()[2] * AbsR[0][0];
+	rb = a_pOther->GetHalfWidth()[1] * AbsR[1][2] + a_pOther->GetHalfWidth()[2] * AbsR[1][1];
+	if (glm::abs(t[0] * R[2][0] - t[2] * R[0][0]) > ra + rb) return 1;
+	// Test axis L = A1 x B1
+	ra = this->GetHalfWidth()[0] * AbsR[2][1] + this->GetHalfWidth()[2] * AbsR[0][1];
+	rb = a_pOther->GetHalfWidth()[0] * AbsR[1][2] + a_pOther->GetHalfWidth()[2] * AbsR[1][0];
+	if (glm::abs(t[0] * R[2][1] - t[2] * R[0][1]) > ra + rb) return 1;
+	// Test axis L = A1 x B2
+	ra = this->GetHalfWidth()[0] * AbsR[2][2] + this->GetHalfWidth()[2] * AbsR[0][2];
+	rb = a_pOther->GetHalfWidth()[0] * AbsR[1][1] + a_pOther->GetHalfWidth()[1] * AbsR[1][0];
+	if (glm::abs(t[0] * R[2][2] - t[2] * R[0][2]) > ra + rb) return 1;
+	// Test axis L = A2 x B0
+	ra = this->GetHalfWidth()[0] * AbsR[1][0] + this->GetHalfWidth()[1] * AbsR[0][0];
+	rb = a_pOther->GetHalfWidth()[1] * AbsR[2][2] + a_pOther->GetHalfWidth()[2] * AbsR[2][1];
+	if (glm::abs(t[1] * R[0][0] - t[0] * R[1][0]) > ra + rb) return 1;
+	// Test axis L = A2 x B1
+	ra = this->GetHalfWidth()[0] * AbsR[1][1] + this->GetHalfWidth()[1] * AbsR[0][1];
+	rb = a_pOther->GetHalfWidth()[0] * AbsR[2][2] + a_pOther->GetHalfWidth()[2] * AbsR[2][0];
+	if (glm::abs(t[1] * R[0][1] - t[0] * R[1][1]) > ra + rb) return 1;
+	// Test axis L = A2 x B2
+	ra = this->GetHalfWidth()[0] * AbsR[1][2] + this->GetHalfWidth()[1] * AbsR[0][2];
+	rb = a_pOther->GetHalfWidth()[0] * AbsR[2][1] + a_pOther->GetHalfWidth()[1] * AbsR[2][0];
+	if (glm::abs(t[1] * R[0][2] - t[0] * R[1][2]) > ra + rb) return 1;
 
 	//there is no axis test that separates this two objects
 	return eSATResults::SAT_NONE;
