@@ -11,6 +11,7 @@ Date: 2017/06
 #include "imgui\ImGuiObject.h"
 
 #include "MyEntity.h"
+#include "EntityManager.h"
 
 namespace Simplex
 {
